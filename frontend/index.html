@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyMate AI | PDF Teaching Assistant</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --panel: #11182b;
+  --panel2: #182239;
+  --border: #293650;
+  --text: #edf2ff;
+  --muted: #96a5c2;
+  --accent: #8b7cff;
+  --accent2: #5de0c0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 280px;
+  padding: 25px 18px;
+  background: #0e1526;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 43px; height: 43px; border-radius: 14px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), #5b9dff);
+  font-size: 23px;
+}
+.brand h2 { margin: 0; font-size: 18px; letter-spacing: -.4px; }
+.brand p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.section-label {
+  color: var(--muted); font-size: 11px; font-weight: 700;
+  letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 12px;
+}
+.upload-card {
+  border: 1px dashed #59658a; border-radius: 16px;
+  padding: 18px 12px; text-align: center;
+  background: #151d33; transition: .2s;
+}
+.upload-card:hover { border-color: var(--accent); }
+.upload-icon { font-size: 29px; margin-bottom: 10px; }
+.upload-card h3 { font-size: 14px; margin: 0 0 7px; }
+.upload-card p { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0 0 14px; }
+.primary, .secondary {
+  border: 0; border-radius: 10px; padding: 11px 15px;
+  font-weight: 650; transition: .2s;
+}
+.primary {
+  background: linear-gradient(110deg, var(--accent), #6b9bff);
+  color: white;
+}
+.primary:hover { filter: brightness(1.12); }
+.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.full { width: 100%; }
+.status {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 12px; background: var(--panel); border-radius: 12px;
+  color: var(--muted); font-size: 12px; line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); margin-top: 5px; flex-shrink: 0; }
+.tip {
+  margin-top: auto; border: 1px solid var(--border);
+  border-radius: 13px; padding: 14px; color: var(--muted);
+  font-size: 12px; line-height: 1.7;
+}
+.tip strong { color: var(--text); display: block; margin-bottom: 5px; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  min-height: 76px; border-bottom: 1px solid var(--border);
+  padding: 16px 28px; display: flex; justify-content: space-between;
+  align-items: center; gap: 15px;
+}
+.topbar h1 { font-size: 17px; margin: 0 0 5px; }
+.topbar p { color: var(--muted); font-size: 12px; margin: 0; }
+.local-badge {
+  display: flex; align-items: center; gap: 7px;
+  background: #142c2c; color: #75e8c8; border: 1px solid #24534b;
+  border-radius: 30px; padding: 8px 11px; font-size: 11px; white-space: nowrap;
+}
+.chat-area {
+  width: 100%; max-width: 900px; margin: 0 auto;
+  padding: 30px 25px 20px; flex: 1; display: flex; flex-direction: column;
+}
+.welcome { text-align: center; margin: auto 0 24px; padding: 20px 0; }
+.welcome-icon {
+  width: 66px; height: 66px; border-radius: 22px; margin: 0 auto 18px;
+  display: grid; place-items: center; font-size: 32px;
+  background: linear-gradient(135deg, #272450, #183b52);
+  border: 1px solid #41456c;
+}
+.welcome h2 { font-size: clamp(25px, 4vw, 35px); letter-spacing: -1px; margin: 0 0 12px; }
+.welcome h2 span {
+  background: linear-gradient(90deg, #a89cff, #63dfd0);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.welcome p { max-width: 490px; margin: 0 auto; color: var(--muted); line-height: 1.7; font-size: 14px; }
+.suggestions {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px; margin-bottom: 24px;
+}
+.suggestion {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 13px; padding: 14px; text-align: left; color: var(--text);
+  font-size: 12px; line-height: 1.6; transition: .2s;
+}
+.suggestion:hover { border-color: var(--accent); background: #171f38; }
+.suggestion span { display: block; color: var(--accent2); font-size: 17px; margin-bottom: 6px; }
+.messages { display: flex; flex-direction: column; gap: 20px; padding-bottom: 20px; }
+.message { display: flex; gap: 11px; align-items: flex-start; }
+.message.user { flex-direction: row-reverse; }
+.avatar {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px;
+  display: grid; place-items: center; background: var(--panel2); font-size: 16px;
+}
+.message.user .avatar { background: #38305f; }
+.bubble {
+  max-width: min(690px, 88%); padding: 14px 16px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 4px 15px 15px 15px; font-size: 14px;
+  line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.message.user .bubble { background: #292448; border-color: #494071; border-radius: 15px 4px 15px 15px; }
+.sources { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 10px; color: var(--muted); font-size: 11px; }
+.source-chip { display: inline-block; background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; margin: 5px 5px 0 0; }
+.composer-wrap { position: sticky; bottom: 0; padding: 12px 25px 22px; background: linear-gradient(transparent, var(--bg) 18%); }
+.composer { max-width: 850px; margin: 0 auto; border: 1px solid #394664; border-radius: 17px; background: var(--panel); padding: 12px; }
+.composer:focus-within { border-color: var(--accent); }
+.composer textarea {
+  width: 100%; resize: vertical; min-height: 48px; max-height: 150px;
+  border: 0; outline: 0; background: transparent; color: var(--text);
+  padding: 5px; font-size: 14px; line-height: 1.6;
+}
+.composer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hint { color: var(--muted); font-size: 11px; }
+.send { width: 42px; height: 40px; border: 0; border-radius: 11px; background: var(--accent); color: white; font-size: 19px; }
+.send:disabled, button:disabled { opacity: .5; cursor: not-allowed; }
+.footer-note { text-align: center; color: #72809c; font-size: 10px; margin-top: 10px; }
+#fileInput { display: none; }
+@media (max-width: 760px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; padding: 14px; border-right: 0; border-bottom: 1px solid var(--border); gap: 13px; }
+  .upload-card { display: flex; align-items: center; text-align: left; gap: 12px; padding: 12px; }
+  .upload-icon { margin: 0; }
+  .upload-card p { margin-bottom: 0; }
+  .upload-card .primary { margin-left: auto; flex-shrink: 0; }
+  .tip { display: none; }
+  .topbar { padding: 14px; min-height: 65px; }
+  .chat-area { padding: 20px 14px; }
+  .suggestions { grid-template-columns: 1fr; }
+  .composer-wrap { padding: 10px 12px 15px; }
+  .local-badge { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div>
+        <h2>StudyMate AI</h2>
+        <p>Your personal study assistant</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Knowledge base</div>
+      <div class="upload-card">
+        <div class="upload-icon">📄</div>
+        <div style="flex:1">
+          <h3>Upload study PDF</h3>
+          <p>Choose your notes or lecture material. Maximum 20 MB.</p>
+        </div>
+        <button class="primary" id="chooseBtn">Choose PDF</button>
+        <input id="fileInput" type="file" accept=".pdf,application/pdf">
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Document status</div>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Ready to upload a PDF.</span>
+      </div>
+    </div>
+
+    <button class="secondary full" id="clearBtn">＋ New conversation</button>
+
+    <div class="tip">
+      <strong>✧ Study smarter</strong>
+      Ask questions about your notes, revise important concepts, and check the source pages used for an answer.
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>PDF Study Chat</h1>
+        <p>Ask questions. Understand more.</p>
+      </div>
+      <div class="local-badge">● Local AI · No paid API</div>
+    </header>
+
+    <section class="chat-area">
+      <div class="welcome" id="welcome">
+        <div class="welcome-icon">✧</div>
+        <h2>Learn anything, <span>one question at a time.</span></h2>
+        <p>Upload your study PDF and ask questions in natural language. StudyMate searches your material and returns an answer with source references.</p>
+      </div>
+
+      <div class="suggestions" id="suggestions">
+        <button class="suggestion" data-question="Summarize the main topics in my study material."><span>✧</span>Summarize my study material</button>
+        <button class="suggestion" data-question="Explain the most important concepts in simple words."><span>◈</span>Explain important concepts</button>
+        <button class="suggestion" data-question="Create five revision questions from my notes."><span>✎</span>Make revision questions</button>
+        <button class="suggestion" data-question="What are the key points I should remember for an exam?"><span>◎</span>Prepare for an exam</button>
+      </div>
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+    </section>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <textarea id="questionInput" placeholder="Ask something about your study PDF..." rows="2"></textarea>
+        <div class="composer-bottom">
+          <span class="hint">Enter to send · Shift + Enter for a new line</span>
+          <button class="send" id="sendBtn" aria-label="Send question">↑</button>
+        </div>
+      </div>
+      <div class="footer-note">Answers are generated locally. Always verify important information against your notes.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const chooseBtn = document.getElementById("chooseBtn");
+const statusText = document.getElementById("statusText");
+const statusDot = document.getElementById("statusDot");
+const messages = document.getElementById("messages");
+const questionInput = document.getElementById("questionInput");
+const sendBtn = document.getElementById("sendBtn");
+const welcome = document.getElementById("welcome");
+const suggestions = document.getElementById("suggestions");
+
+let busy = false;
+let activeFilename = null;
+
+function setStatus(message, error = false) {
+  statusText.textContent = message;
+  statusDot.style.background = error ? "#ff7777" : "#5de0c0";
+}
+
+function addMessage(role, text, sources = []) {
+  welcome.style.display = "none";
+  suggestions.style.display = "none";
+
+  const row = document.createElement("div");
+  row.className = "message " + role;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = role === "user" ? "👤" : "✦";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+
+  if (sources.length) {
+    const sourceBox = document.createElement("div");
+    sourceBox.className = "sources";
+    sourceBox.textContent = "Sources used";
+
+    sources.forEach(source => {
+      const chip = document.createElement("span");
+      chip.className = "source-chip";
+      const page = source.page ? " · Page " + source.page : "";
+      chip.textContent = (source.file || "Study PDF") + page;
+      sourceBox.appendChild(chip);
+    });
+
+    bubble.appendChild(sourceBox);
+  }
+
+  row.append(avatar, bubble);
+  messages.appendChild(row);
+  row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  return row;
+}
+
+function setBusy(value) {
+  busy = value;
+  sendBtn.disabled = value;
+  chooseBtn.disabled = value;
+  sendBtn.textContent = value ? "…" : "↑";
+}
+
+chooseBtn.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    setStatus("Please choose a PDF file.", true);
+    fileInput.value = "";
+    return;
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    setStatus("PDF must be smaller than 20 MB.", true);
+    fileInput.value = "";
+    return;
+  }
+
+  setBusy(true);
+  setStatus("Uploading and indexing " + file.name + "…");
+
+  const form = new FormData();
+  form.append("file", file);
+
+  try {
+    const response = await fetch("/upload", { method: "POST", body: form });
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.detail || "PDF upload failed.");
+
+    activeFilename = data.filename;
+    setStatus(file.name + " · " + data.chunks_indexed + " chunks indexed");
+    addMessage("assistant", "Your PDF is ready! I've indexed " + data.chunks_indexed + " text chunks. Ask me a question about your study material.");
+  } catch (error) {
+    setStatus(error.message, true);
+    addMessage("assistant", "I couldn't process that PDF. " + error.message);
+  } finally {
+    setBusy(false);
+    fileInput.value = "";
+  }
+});
+
+async function askQuestion(text) {
+  const question = (text || questionInput.value).trim();
+  if (!question || busy) return;
+  if (!activeFilename) {
+    setStatus("Upload a PDF before asking a question.", true);
+    addMessage("assistant", "Please upload a PDF first, then ask your question.");
+    return;
+  }
+
+  addMessage("user", question);
+  questionInput.value = "";
+  setBusy(true);
+
+  const loadingRow = addMessage("assistant", "Searching your study material and generating an answer…");
+
+  try {
+    const response = await fetch("/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, filename: activeFilename })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Question failed.");
+
+    loadingRow.remove();
+    addMessage("assistant", data.answer || "No answer was returned.", data.sources || []);
+  } catch (error) {
+    loadingRow.remove();
+    addMessage("assistant", "I couldn't answer that question. " + error.message);
+  } finally {
+    setBusy(false);
+    questionInput.focus();
+  }
+}
+
+sendBtn.addEventListener("click", () => askQuestion());
+
+questionInput.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    askQuestion();
+  }
+});
+
+document.querySelectorAll(".suggestion").forEach(button => {
+  button.addEventListener("click", () => askQuestion(button.dataset.question));
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  messages.replaceChildren();
+  welcome.style.display = "";
+  suggestions.style.display = "";
+  questionInput.value = "";
+});
+</script>
+</body>
+</html>
