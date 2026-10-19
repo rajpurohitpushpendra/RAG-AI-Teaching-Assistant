@@ -1,11 +1,6 @@
 ## 📸 Project Screenshots
-
-### StudyMate AI Home Page
 ![StudyMate AI Home Page](screenshots/home.png)
-
-### AI Chat Response
 ![AI Chat Response](screenshots/chat_response.png)
-# StudyMate AI — PDF RAG Teaching Assistant
 
 A locally running AI teaching assistant that answers questions using information retrieved from your uploaded PDF documents. Built with Python, FastAPI, LangChain, ChromaDB, Hugging Face embeddings, and Ollama.
 
