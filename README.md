@@ -1,3 +1,6 @@
+![StudyMate AI Home Page](screenshots/home.png)
+![AI Chat Response](screenshots/chat_response.png)
+
 
 # StudyMate AI — PDF RAG Teaching Assistant
 
